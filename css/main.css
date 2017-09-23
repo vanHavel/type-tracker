@@ -1,0 +1,49 @@
+body {
+  margin-left: 30px;
+  margin-right: 30px;
+}
+
+header {
+  
+}
+
+main {
+  float: left;
+  width: 70%;
+  height: 80vh;
+}
+
+
+div.inputs {
+  float: left;
+  width: 30%;
+  height: 50vh;
+}
+
+div.display {
+  float: left;
+  width: 30%;
+  height: 50vh;
+  border: 1px solid #000000;
+}
+
+div.outputs {
+  float: left;
+  width: 30%;
+  height: 50vh;
+}
+
+div.solution {
+  clear: both;
+}
+
+nav {
+  float: left;
+  width: 25%;
+  border-left: 1px solid #808080;
+  height: 80vh;
+}
+
+footer {
+  clear: both;
+}
