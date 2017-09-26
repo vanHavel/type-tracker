@@ -1,7 +1,7 @@
 module Abs where
 
-import Prelude((<>), class Eq)
-import Data.Show(class Show, show)
+import Data.Show (class Show, show)
+import Prelude ((<>), class Eq)
 
 data Term = Var String | Application Term Term | Lambda String Term
 

@@ -4,7 +4,7 @@ import Abs (Term(..))
 import Control.Alt ((<|>))
 import Data.Array (fromFoldable)
 import Data.Either (Either(..))
-import Data.String (singleton, fromCharArray)
+import Data.String (singleton, fromCharArray, trim)
 import Prelude (bind, discard, pure, ($), (<$>), (<>), (>>=))
 import Text.Parsing.StringParser (Parser, runParser, ParseError(..))
 import Text.Parsing.StringParser.Combinators (between, many, fix, chainl1)
@@ -21,14 +21,10 @@ inWhiteSpace = between (whiteSpace) (whiteSpace)
 
 -- run the term parser and convert to error monad
 runParseTerm :: String -> Error Term
-runParseTerm s = let result = runParser parseTermString s in
+runParseTerm s = let result = runParser parseTerm (trim s) in
   case result of
     (Left (ParseError m)) -> Left m
     (Right term) -> pure term
-
--- parse term string with surrounding whitespace
-parseTermString :: Parser Term
-parseTermString = inWhiteSpace parseTerm
 
 -- parse a general term by parsing a list of nonapplications and folding them with applications
 parseTerm :: Parser Term

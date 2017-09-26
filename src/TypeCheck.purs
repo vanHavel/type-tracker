@@ -3,6 +3,8 @@ module TypeCheck(runTypeCheck) where
 import Data.Maybe
 
 import Abs (Term(..))
+import Control.Monad.Eff.Console (log)
+import Control.Monad.Eff.Unsafe (unsafePerformEff)
 import Control.Monad.State (lift, StateT, evalStateT, get, put)
 import Data.Either (Either(..))
 import Data.Functor (map)
@@ -22,8 +24,10 @@ type TypeInference = {typ :: Type,
 type TypeCheck = StateT Int Error
 
 -- typecheck a term in a given context
-runTypeCheck :: Term -> Context -> Error TypeInference
-runTypeCheck t c = evalStateT (typecheck t c) 0
+runTypeCheck :: Term -> Context -> Error Type
+runTypeCheck t c = do
+  {typ: itype, subst: _} <- evalStateT (typecheck t c) 0
+  pure itype
 
 -- internal typecheck routine
 typecheck :: Term -> Context -> TypeCheck TypeInference
@@ -88,7 +92,8 @@ mgu t1@(TypeVar a) t2@(Function b c) theta | occurs a t2 = Left ("Failed to unif
                                            | otherwise   = pure $ Map.singleton a t2 `compose` theta
 mgu t1@(Function a b) t2@(Function c d) theta = do
   sigma <- mgu a c theta
-  mgu b d sigma
+  nu <- mgu (perform sigma b) (perform sigma d) sigma
+  pure nu
 mgu t1 t2 theta = mgu t2 t1 theta
 
 -- occurs check of a type variable in a term
