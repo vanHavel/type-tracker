@@ -3,6 +3,7 @@ module Abs where
 import Data.Show (class Show, show)
 import Prelude ((<>), class Eq)
 
+-- lambda terms
 data Term = Var String | Application Term Term | Lambda String Term
 
 derive instance eqTerm :: Eq Term

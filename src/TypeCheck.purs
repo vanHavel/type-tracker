@@ -1,4 +1,4 @@
-module TypeCheck(runTypeCheck) where
+module TypeCheck(runTypeCheck, equivalent) where
 
 import Data.Maybe
 
@@ -10,7 +10,9 @@ import Data.Either (Either(..))
 import Data.Functor (map)
 import Data.Map (Map)
 import Data.Map (lookup, empty, insert, singleton, filterKeys, member) as Map
-import Prelude (pure, bind, discard, show, otherwise, not, (<>), (+), ($), (==), (||))
+import Data.Set (Set)
+import Data.Set (size, singleton, empty) as Set
+import Prelude (bind, discard, not, otherwise, pure, show, ($), (&&), (+), (<>), (==), (||))
 import Types (Type(..), Context, Error)
 
 -- substitution of type variables
@@ -102,3 +104,30 @@ occurs a (Base _) = false
 occurs a (TypeVar b) | a == b = true
                      | otherwise = false
 occurs a (Function b c) = occurs a b || occurs a c
+
+-- check whether types are equivalent up to renaming of variables
+-- this is done by unifying the types and checking if they have the same
+-- structure and unification preserved the number of type variables
+equivalent :: Type -> Type -> Boolean
+equivalent t1 t2 = let u = unify t1 t2 in case u of
+  Right theta -> let t1' = perform theta t1
+                     t2' = perform theta t2
+                       in sameStructure t1' t2' &&
+                          numVars t2 == numVars t1 &&
+                          numVars t1' == numVars t1
+  Left _ -> false
+
+-- check if types have the same general structure
+sameStructure :: Type -> Type -> Boolean
+sameStructure (Base x) (Base y) | x == y = true
+                                | otherwise = false
+sameStructure (TypeVar _) (TypeVar _) = true
+sameStructure (Function t1 t2) (Function t3 t4) = sameStructure t1 t3 && sameStructure t2 t4
+sameStructure _ _ = false
+
+-- count number of distinct type variables in term
+numVars :: Type -> Int
+numVars t = Set.size $ vars t where
+  vars (Base _) = Set.empty
+  vars (TypeVar a) = Set.singleton a
+  vars (Function a b) = vars a <> vars b

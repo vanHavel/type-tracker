@@ -1,6 +1,7 @@
 module TestTypeChecker (testTypeChecker) where
 
 import Abs (Term(..))
+import Control.Monad.Eff.Exception (error, throwException)
 import Data.Either (Either(..))
 import Data.Map (Map)
 import Data.Map (empty, fromFoldable) as Map
@@ -8,7 +9,7 @@ import Data.Tuple (Tuple(..))
 import Prelude (Unit, pure, discard, show, unit, ($), (<>))
 import Test.QuickCheck (QC, Result(..), (==?))
 import TestUtil (assert)
-import TypeCheck (runTypeCheck)
+import TypeCheck (equivalent, runTypeCheck)
 import Types (Context, Type(..))
 
 -- proposition that type checking fails
@@ -16,6 +17,12 @@ typeCheckFail :: Term -> Context -> Result
 typeCheckFail t c = case runTypeCheck t c of
   Left _ -> Success
   Right typ -> Failed $ "Identified type " <> show typ
+
+-- assert that the type of a term is equivalent to another type
+assertEquivalent :: forall e. Term -> Context -> Type -> QC e Unit
+assertEquivalent term c typ = case runTypeCheck term c of
+  Left m -> throwException $ error m
+  Right termtyp -> assert (equivalent termtyp typ ==? true)
 
 -- test the typechecker
 testTypeChecker :: forall e. QC e Unit
@@ -57,6 +64,6 @@ testTypeChecker = do
   assert $ typeCheckFail (Lambda "y" (Application (Var "f") (Var "f"))) c0
   assert $ runTypeCheck (Lambda "x" (Application (Var "g") (Var "x"))) c3 ==? Right (Function (Base "B")(Base "A"))
   -- lambdas and polymorphism
-  assert $ runTypeCheck (Lambda "y" (Var "y")) c0 ==? Right (Function (TypeVar "t0") (TypeVar "t0"))
-  assert $ runTypeCheck (Lambda "y" (Application (Var "y") (Var "x"))) c3 ==? Right (Function (Function (Base "A") (TypeVar "t1")) (TypeVar "t1"))
-  assert $ runTypeCheck (Lambda "y" (Application (Var "g") (Var "y"))) c4 ==? Right (Function (TypeVar "t1") (TypeVar "t1"))
+  assertEquivalent (Lambda "y" (Var "y")) c0 (Function (TypeVar "a") (TypeVar "a"))
+  assertEquivalent (Lambda "y" (Application (Var "y") (Var "x"))) c3 (Function (Function (Base "A") (TypeVar "a")) (TypeVar "a"))
+  assertEquivalent (Lambda "y" (Application (Var "g") (Var "y"))) c4 (Function (TypeVar "a") (TypeVar "a"))
