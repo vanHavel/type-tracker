@@ -13,12 +13,13 @@
     "purescript-maps": "^3.5.2",
     "purescript-sets": "^3.0.0",
     "purescript-transformers": "^3.4.0",
-    "purescript-string-parsers": "^3.0.1"
+    "purescript-string-parsers": "^3.0.1",
+    "purescript-dom": "^4.9.0"
   },
   "devDependencies": {
     "purescript-psci-support": "^3.0.0",
     "purescript-quickcheck": "^4.6.0",
-    "purescript-assert":  "^3.0.0",
+    "purescript-assert": "^3.0.0",
     "purescript-nonempty": "^4.0.0"
   }
 }
